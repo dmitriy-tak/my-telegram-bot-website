@@ -10,7 +10,7 @@ load_dotenv()
 # Получаем токен из переменной окружения
 TOKEN = os.getenv('TELEGRAM_BOT_TOKEN')
 
-app = Flask(name)
+app = Flask(__name__)
 
 # Инициализируем бота и диспетчер
 application = Application.builder().token(TOKEN).build()
