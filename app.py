@@ -1,3 +1,6 @@
+Конечно! Вот исправленный код с учетом корректировок для асинхронного вызова set_webhook и использования правильного порта для запуска приложения:
+
+`python
 import os
 from flask import Flask, request
 from telegram import Bot, Update
@@ -10,7 +13,7 @@ load_dotenv()
 # Получаем токен из переменной окружения
 TOKEN = os.getenv('TELEGRAM_BOT_TOKEN')
 
-app = Flask(__name__)
+app = Flask(name)
 
 # Инициализируем бота и диспетчер
 application = Application.builder().token(TOKEN).build()
@@ -29,20 +32,7 @@ application.add_handler(MessageHandler(filters.TEXT, handle_message))
 
 # Webhook endpoint для получения обновлений от Telegram
 @app.route(f'/{TOKEN}', methods=['POST'])
-def webhook():
+async def webhook():
     update = request.get_json()
-    print(f"Received update: {update}")  # Выводим обновление в лог
     application.update_queue.put(update)
     return '', 200
-
-# Настройка Webhook
-@app.route('/')
-def set_webhook():
-    # Замените 'your-domain.com' на адрес вашего развернутого сервера
-    url = f'https://my-telegram-bot-website.onrender.com/{TOKEN}'
-    bot = Bot(token=TOKEN)
-    bot.set_webhook(url)
-    return 'Webhook set!'
-
-if __name__ == '__main__':
-    app.run(port=5000)
