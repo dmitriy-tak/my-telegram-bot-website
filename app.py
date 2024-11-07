@@ -1,35 +1,40 @@
-import os
+import logging
+from aiogram import Bot, Dispatcher, types
+from aiogram.types import ParseMode
+from aiogram.contrib.middlewares.logging import LoggingMiddleware
 from flask import Flask, request
-from telegram import Bot, Update
-from telegram.ext import Application, CommandHandler, MessageHandler, filters
-from dotenv import load_dotenv
+import os
+import asyncio
 
-# Загружаем переменные окружения из файла .env
-load_dotenv()
+API_TOKEN = 'your-telegram-bot-token'
+WEBHOOK_URL = 'your-webhook-url'
 
-# Получаем токен из переменной окружения
-TOKEN = os.getenv('TELEGRAM_BOT_TOKEN')
-
+# Создание приложения Flask
 app = Flask(__name__)
 
-# Инициализируем бота и диспетчер
-application = Application.builder().token(TOKEN).build()
+# Настройка логирования
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
-# Обработчик команды /start
-async def start(update: Update, context):
-    await update.message.reply_text("Привет! Я твой Telegram-бот.")
+# Создание объекта бота и диспетчера
+bot = Bot(token=API_TOKEN)
+dp = Dispatcher(bot)
+dp.middleware.setup(LoggingMiddleware())
 
-# Обработчик всех текстовых сообщений
-async def handle_message(update: Update, context):
-    await update.message.reply_text(f"Ты сказал: {update.message.text}")
-
-# Регистрируем обработчики
-application.add_handler(CommandHandler("start", start))
-application.add_handler(MessageHandler(filters.TEXT, handle_message))
-
-# Webhook endpoint для получения обновлений от Telegram
-@app.route(f'/{TOKEN}', methods=['POST'])
+# Асинхронная функция для обработки вебхуков
+@app.route("/webhook", methods=["POST"])
 async def webhook():
-    update = request.get_json()
-    application.update_queue.put(update)
-    return '', 200
+    json_str = request.get_data(as_text=True)
+    update = types.Update.parse_raw(json_str)
+    await dp.process_update(update)
+    return "OK", 200
+
+# Функция для установки вебхука
+async def set_webhook():
+    await bot.set_webhook(WEBHOOK_URL)
+
+# Запуск приложения Flask
+if __name__ == "__main__":
+    loop = asyncio.get_event_loop()
+    loop.create_task(set_webhook())  # Устанавливаем вебхук при запуске
+    app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 10000)))
