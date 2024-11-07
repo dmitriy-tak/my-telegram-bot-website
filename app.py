@@ -1,6 +1,3 @@
-Конечно! Вот исправленный код с учетом корректировок для асинхронного вызова set_webhook и использования правильного порта для запуска приложения:
-
-`python
 import os
 from flask import Flask, request
 from telegram import Bot, Update
