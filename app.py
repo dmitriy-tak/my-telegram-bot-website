@@ -31,15 +31,15 @@ application.add_handler(MessageHandler(filters.TEXT, handle_message))
 @app.route(f'/{TOKEN}', methods=['POST'])
 def webhook():
     update = request.get_json()
-    print(f"Received update: {update}")  # Выводим обновления в лог
-    application.update_queue.put(update)  # Отправляем обновление в очередь для обработки
+    print(f"Received update: {update}")  # Выводим обновление в лог
+    application.update_queue.put(update)
     return '', 200
 
 # Настройка Webhook
 @app.route('/')
 def set_webhook():
     # Замените 'your-domain.com' на адрес вашего развернутого сервера
-    url = f'https://your-domain.com/{TOKEN}'
+    url = f'https://my-telegram-bot-website.onrender.com/{TOKEN}'
     bot = Bot(token=TOKEN)
     bot.set_webhook(url)
     return 'Webhook set!'
